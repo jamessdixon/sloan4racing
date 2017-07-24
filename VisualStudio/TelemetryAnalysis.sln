@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Library1", "Library1\Library1.fsproj", "{637B2F9E-331D-4FF8-8BAC-ECB4D0964AC7}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{37467F92-8ADB-45FF-B7A2-6D7D23F5FE3F}"
 	ProjectSection(SolutionItems) = preProject
 		Data\firstRun.csv = Data\firstRun.csv
 		Data\secondRun.csv = Data\secondRun.csv
 	EndProjectSection
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TelemetryAnalysis", "TelementryAnalysis\TelemetryAnalysis.fsproj", "{637B2F9E-331D-4FF8-8BAC-ECB4D0964AC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
