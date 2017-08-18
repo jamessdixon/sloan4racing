@@ -29,17 +29,23 @@ let obs =
                                 Speed=float r.Speed})
 obs |> Seq.length
 
-let chartData = obs |> Seq.map(fun r -> r.Lat, r.Lon)
-let chart = Chart.Line(chartData).WithYAxis(Min= -78.676, Max= -78.675)
-chart.ShowChart()
-
-let chartData' = obs |> Seq.map(fun r -> (r.Lat * -1.0), r.Lon)
-let chart' = Chart.Line(chartData').WithYAxis(Min= -78.676, Max= -78.675)
-chart'.ShowChart()
-
-let chartData'' = obs |> Seq.map(fun r -> (r.Lat * -1.0), r.Lon)
-let chart'' = Chart.Point(chartData'').WithYAxis(Min= -78.676, Max= -78.675)
-chart''.ShowChart()
+//obs 
+//|> Seq.map(fun r -> r.Lat, r.Lon)
+//|> Chart.Line
+//|> Chart.WithYAxis(Min= -78.676, Max= -78.675)
+//|> Chart.Show
+//
+//obs 
+//|> Seq.map(fun r -> (r.Lat * -1.0), r.Lon)
+//|> Chart.Line
+//|> Chart.WithYAxis(Min= -78.676, Max= -78.675)
+//|> Chart.Show
+//
+obs 
+|> Seq.map(fun r -> (r.Lat * -1.0), r.Lon)
+|> Chart.Point
+|> Chart.WithYAxis(Min= -78.676, Max= -78.675)
+|> Chart.Show
 
 type Observation2 = {Id:int;ReadingTime:DateTime;Lat:float;Lon:float;Elev:float;Speed:float; LapNumber:int}
 
@@ -90,6 +96,7 @@ racingObs
 |> Seq.map(fun (ln,obs) -> ln,obs |> Seq.averageBy(fun ob -> ob.Speed))
 |> Seq.iter(fun (ln,s) -> printfn "%i:%f" ln s)
 
+
 //Check time = clock is every second so time diff is number of seconds
 let totalTimeForObservations (obs:Observation2 seq) =
     let firstValue = obs |> Seq.head |> fun o -> o.ReadingTime
@@ -108,6 +115,7 @@ racingObs
 |> Seq.sortByDescending(fun (ln,s) -> s)
 |> Seq.iter(fun (ln,s) -> printfn "%i:%f" ln s)
 
+//
 type Observation3 = {Id:int;Lat:float;Lon:float;Elev:float;
                     Speed:float; LapNumber:int; TrackLocation:int}
 
@@ -119,50 +127,147 @@ let mutable priorLon = obs |> Seq.head |> fun o -> o.Lon
 for ob in obs do
     obs4.Add({Id=ob.Id;Lat=ob.Lat;Lon=ob.Lon;Elev=ob.Elev;
                 Speed=ob.Speed;LapNumber=lapNumber3; TrackLocation=trackLocation})
-    if  (priorLat < 35.7005 && ob.Lat > 35.7005) then
+    if  (priorLat2 < 35.7005 && ob.Lat > 35.7005) then
         lapNumber3 <- lapNumber3 + 1
-    if (priorLat < 35.7003 && ob.Lat > 35.7003) then
+    if (priorLat2 < 35.7003 && ob.Lat > 35.7003) then
         trackLocation <- 1
     if (priorLon < -78.6756 && ob.Lon > -78.6756) then
         trackLocation <- 2
-    if (priorLat > 35.7003 && ob.Lat < 35.7003) then
+    if (priorLat2 > 35.7003 && ob.Lat < 35.7003) then
         trackLocation <- 3
-    if (priorLat > 35.7007 && ob.Lat < 35.7007) then
+    if (priorLat2 > 35.7007 && ob.Lat < 35.7007) then
         trackLocation <- 4
     if (priorLon > -78.6756 && ob.Lon < -78.6756) then
         trackLocation <- 5
-    if (priorLat < 35.7007 && ob.Lat > 35.7007) then
+    if (priorLat2 < 35.7007 && ob.Lat > 35.7007) then
         trackLocation <- 6
-    priorLat <- ob.Lat
+    priorLat2 <- ob.Lat
     priorLon <- ob.Lon
 
 obs4 |> Seq.length
 
 obs4
-|> Seq.filter(fun o -> o.LapNumber > 0 && o.LapNumber < 12)
 |> Seq.groupBy(fun o -> o.LapNumber)
-|> Seq.map(fun (lp,obs) -> lp,obs |> Seq.groupBy(fun o -> o.TrackLocation))
-|> Seq.map(fun (lp,obs) -> lp,obs |> Seq.map(fun (ts,obs2) -> ts, obs2))
-|> Seq.map(fun (lp,obs) -> lp,obs |> Seq.map(fun (ts,obs2) -> ts, obs2 |> Seq.averageBy(fun o -> o.Speed))) 
-|> Seq.map(fun (lp,obs) -> lp,obs |> Seq.sortBy(fun (x,y) -> x))
-|> Seq.collect(fun (lp,obs) -> obs |> Seq.map(fun (x,y) -> lp,x,y))
-|> Seq.iter(fun (lp,tl,s) -> printfn "%i,%i,%f" lp tl s)
+|> Seq.map(fun (ln,obs) -> ln,obs |> Seq.averageBy(fun o -> o.Speed))
+|> Chart.Bar
+|> Chart.Show
 
-//Chart Redux
-let chartData5 =
+obs4
+|> Seq.filter(fun o -> o.LapNumber > 1 && o.LapNumber < 11)
+|> Seq.groupBy(fun o -> o.LapNumber)
+|> Seq.map(fun (ln,obs) -> ln,obs |> Seq.averageBy(fun o -> o.Speed))
+|> Chart.Bar
+|> Chart.WithYAxis(Min= 15.0, Max= 25.0)
+|> Chart.Show
+
+obs4
+|> Seq.filter(fun o -> o.LapNumber > 1 && o.LapNumber < 11)
+|> Seq.groupBy(fun o -> o.TrackLocation)
+|> Seq.map(fun (ln,obs) -> ln,obs |> Seq.averageBy(fun o -> o.Speed))
+|> Chart.Bar
+|> Chart.WithYAxis(Min= 20.0, Max= 25.0)
+|> Chart.Show
+
+racingObs
+|> Seq.groupBy(fun o -> o.LapNumber)
+|> Seq.map(fun (ln,obs) -> ln,obs |> Seq.averageBy(fun ob -> ob.Speed))
+|> Seq.sortBy(fun (ln,s) -> s)
+|> Seq.iter(fun (ln,s) -> printfn "%i:%f" ln s)
+
+let getTrackLocationSpeed lapNumber =
     obs4
-    |> Seq.filter(fun o -> o.LapNumber > 0 && o.LapNumber < 12)
-    |> Seq.groupBy(fun o -> o.LapNumber)
-    |> Seq.map(fun (lp,obs) -> lp,obs |> Seq.groupBy(fun o -> o.TrackLocation))
-    |> Seq.map(fun (lp,obs) -> lp,obs |> Seq.map(fun (ts,obs2) -> ts, obs2))
-    |> Seq.map(fun (lp,obs) -> lp,obs |> Seq.map(fun (ts,obs2) -> ts, obs2 |> Seq.averageBy(fun o -> o.Speed))) 
-    |> Seq.map(fun (lp,obs) -> lp,obs |> Seq.sortBy(fun (x,y) -> x))
-    |> Seq.collect(fun (lp,obs) -> obs |> Seq.map(fun (x,y) -> lp,x,y))
-    |> Seq.map(fun (lp,ts,s) -> ts,s)
+    |> Seq.filter(fun o -> o.LapNumber = lapNumber)
+    |> Seq.groupBy(fun o -> o.TrackLocation)
+    |> Seq.map(fun (ln,obs) -> ln,obs |> Seq.averageBy(fun o -> o.Speed))
+    |> Seq.sortBy(fun (ts,sp) -> ts) 
 
-let chart5 = Chart.Bar(chartData5)
-chart.ShowChart()
+Seq.zip (getTrackLocationSpeed 3) (getTrackLocationSpeed 5)
+|> Seq.map(fun (t,f) -> fst t, snd t, snd f)
+|> Seq.map(fun (ts,t,f) -> ts,f-t)
+|> Chart.Bar
+|> Chart.Show
+
+let slow = 
+    [3;4;8] 
+    |> Seq.collect(fun ln -> getTrackLocationSpeed ln)
+    |> Seq.groupBy(fun x -> fst x)
+    |> Seq.map(fun (tl, obs) -> tl,obs |> Seq.averageBy(fun o -> snd o))
+
+let fast =
+    [5;7;10]
+    |> Seq.collect(fun ln -> getTrackLocationSpeed ln)
+    |> Seq.groupBy(fun x -> fst x)
+    |> Seq.map(fun (tl, obs) -> tl,obs |> Seq.averageBy(fun o -> snd o))
+
+Seq.zip slow fast
+|> Seq.map(fun (t,f) -> fst t, snd t, snd f)
+|> Seq.map(fun (ts,t,f) -> ts,f-t)
+|> Chart.Bar
+|> Chart.Show
 
 
+//Map
+#r "../packages/Microsoft.Maps.MapControl.WPF.1.0.0.3/lib/net40-Client/Microsoft.Maps.MapControl.WPF.dll"
+#r "PresentationFramework.dll"
+#r "PresentationCore.dll"
+#r "WindowsBase.dll"
+#r "System.Xaml.dll"
+
+open System.IO
+open System.Text
+open System.Xaml
+open System.Windows
+open System.Windows.Data
+open System.Windows.Media
+open System.Windows.Shapes
+open System.Windows.Markup
+open System.Windows.Controls
+open Microsoft.Maps.MapControl.WPF
+
+let key = "AsA7FfvBJiHj6hzCc1Nb7ipihTsxfO09DvZWHDItqtNFUFBDQU3QE4PtgZlCZXuF"
+let credentials = new ApplicationIdCredentialsProvider(key)
+
+let window = new System.Windows.Window()
+window.Height <- 800.0
+window.Width <- 800.0
+let grid = System.Windows.Controls.Grid()
+window.Content <- grid
+
+let map = new Microsoft.Maps.MapControl.WPF.Map()
+map.Mode <- Microsoft.Maps.MapControl.WPF.AerialMode()
+
+map.CredentialsProvider <- credentials
+map.ZoomLevel <- 19.0
+map.Center <- new Location(35.7004574, -78.6760326) 
+
+let createPin lap lat lon =
+    let brush =
+        match lap with
+        | 3 | 4 | 8 -> new SolidColorBrush(Colors.Red)
+        | 5 | 7 | 10 -> new SolidColorBrush(Colors.Green)
+        | _ -> new SolidColorBrush(Colors.Black)
+     
+    let pin = new Pushpin()
+    let factory = new FrameworkElementFactory(typeof<Ellipse>)
+    factory.SetValue(Ellipse.FillProperty,brush) |> ignore
+    factory.SetValue(Ellipse.WidthProperty, 4.0) |> ignore
+    factory.SetValue(Ellipse.HeightProperty, 4.0) |> ignore
+    let template = new ControlTemplate();
+    template.VisualTree <- factory
+    pin.Template <- template
+
+    let location = new Location()
+    location.Latitude <- lat
+    location.Longitude <- lon
+    pin.Location <- location
+    pin
+
+obs4
+|> Seq.filter(fun o -> o.LapNumber > 1 && o.LapNumber < 11)
+|> Seq.map(fun o -> createPin o.LapNumber o.Lat o.Lon)
+|> Seq.iter(fun pp -> map.Children.Add(pp) |> ignore)
+
+grid.Children.Add(map)
+window.Show()
 
 
